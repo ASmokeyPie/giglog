@@ -8,6 +8,13 @@ app.secret_key = 'supersecret'
 
 DATA_FILE = "data/gigs.json"
 
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%d %b %Y'):
+    """Format a date string like '2025-11-21' to '21 Nov 2025'"""
+    dt = datetime.strptime(value, "%Y-%m-%d")
+    return dt.strftime(format)
+
+
 def load_gigs():
     if not os.path.exists(DATA_FILE):
         return []
@@ -53,6 +60,36 @@ def add_gig():
     
     # GET request shows the form
     return render_template("add_gig.html")
+
+@app.route("/delete_gig/<int:index>", methods=["POST"])
+def delete_gig(index):
+    gigs = load_gigs()
+    if 0 <= index < len(gigs):
+        gigs.pop(index)
+        save_gigs(gigs)
+        flash("Gig deleted successfully.", "success")
+    return redirect(url_for("feed"))
+
+@app.route("/edit_gig/<int:index>", methods=["GET", "POST"])
+def edit_gig(index):
+    gigs = load_gigs()
+    
+    if index < 0 or index >= len(gigs):
+        flash("Invalid gig.index.", "danger")
+        return redirect(url_for("feed"))
+    
+    if request.method == "POST":
+        # Update gig details
+        gigs[index]["artist"] = request.form["artist"]
+        gigs[index]["venue"] = request.form["venue"]
+        gigs[index]["date"] = request.form["date"]
+        gigs[index]["review"] = request.form["review"]
+        save_gigs(gigs)
+        flash("Gig updated successfully!", "success")
+        return redirect(url_for("feed"))
+    
+    gig = gigs[index]
+    return render_template("edit_gig.html", gig=gig, index=index)
 
 @app.route("/profile")
 def profile():
