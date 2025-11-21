@@ -4,5 +4,20 @@
 
 {% block content %}
 <h2>Gig Feed</h2>
-<p>This will display recent gigs logged by users</p>
+
+{% if gigs %}
+	<ul class="list-group">
+	{% for gig in gigs %}
+		<li class="list-group-item">
+			<strong>{{ gig.artist }}</strong> - {{ gig.venue }}
+			<br>
+			<small>{{ gig.date }}</small>
+			<br>
+			<em>{{ gig.review }}</em>
+		</li>
+	{% endfor %}
+	</ul>
+{% else %}
+	<p>No gigs logged yet.</p>
+{% endif %}
 {% endblock %}
