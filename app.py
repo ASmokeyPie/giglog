@@ -90,13 +90,15 @@ def save_friends(friends):
 
 def get_friends(username):
     """
+    Return a list of usernames that are friends with the given username.
+    Assumes friends.json is a list of {"user": "...", "friend": "..."} objects or a similar structure.
     """
     friends_data = load_friends()
     friends_list = []
     for entry in friends_data:
         if entry["user"] == username:
-            friends_list.append(entry["friend"])
-        elif entry["friend"] == username:
+            friends_list.extend(entry.get("friends", []))
+        elif entry.get("friends") and username in entry["friends"]:
             friends_list.append(entry["user"])
     return friends_list
 

@@ -26,6 +26,8 @@
             <small>{{ gig.date | datetimeformat }}</small>
             <br>
             <em>{{ gig.review }}</em>
+			<br>
+			<small>Logged by: {{ gig.username }}</small>
         </div>
     </li>
 {% endfor %}
