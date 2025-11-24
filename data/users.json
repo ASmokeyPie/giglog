@@ -1,0 +1,14 @@
+[
+    {
+        "username": "test1",
+        "email": "test1@test1.com",
+        "password": "scrypt:32768:8:1$HVFzwBDGwyUE7eLC$8ad29c34e7c9460c61f0b5a2a206ff7e107d3fffaf1e274440f8640af11d770e7ced8fe61ba40d60c74c2fa417cd5f095b8ae723da1673a0406f3dfbaa1a667b",
+        "created_at": "2025-11-24 16:09:53"
+    },
+    {
+        "username": "test2",
+        "email": "test2@test2.com",
+        "password": "scrypt:32768:8:1$0S61l9T4gNMAAfs6$4b6f5f95c606f65c789953c4e0505c8b651c8bc1068d1caace63b2755597595df284738300724f7ac6276c826c7a788bfe5a66fb4591b20c75e0b52335255173",
+        "created_at": "2025-11-24 16:50:24"
+    }
+]
