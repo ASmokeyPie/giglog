@@ -321,7 +321,7 @@ def logout():
 
 @app.route("/add_friend/<friend_username>", methods=["POST"])
 def add_friend(friend_username):
-    current_user = session.get["user"]
+    current_user = session.get("user")
     friends = load_friends()
     user_friends = next((f for f in friends if f["user"] == current_user), None)
     if user_friends:
