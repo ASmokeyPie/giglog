@@ -323,7 +323,7 @@ def logout():
 def add_friend(friend_username):
     current_user = session.get["user"]
     friends = load_friends()
-    user_friends = next((f for f in friends if f["user"] == current_user), none)
+    user_friends = next((f for f in friends if f["user"] == current_user), None)
     if user_friends:
         if friend_username not in user_friends["friends"]:
             user_friends["friends"].append(friend_username)
