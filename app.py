@@ -15,6 +15,7 @@ app.secret_key = 'supersecret'
 # Paths to the JSON files that store app data
 DATA_FILE = "data/gigs.json"
 USERS_FILE = "data/users.json"
+FRIENDS_FILE = "data/friends.json"
 
 # -----------------------------
 # Custom Jinja2 template filter
@@ -67,8 +68,37 @@ def load_users():
         return json.load(f)
 
 def save_users(users):
+    """
+    """
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=4)
+
+# -- User Friends --
+def load_friends():
+    """
+    """
+    if not os.path.exists(FRIENDS_FILE):
+        return []
+    with open(FRIENDS_FILE, "r") as f:
+        return json.load(f)
+
+def save_friends(friends):
+    """
+    """
+    with open(FRIENDS_FILE, "w") as f:
+        json.dump(friends, f, indent=4)
+
+def get_friends(username):
+    """
+    """
+    friends_data = load_friends()
+    friends_list = []
+    for entry in friends_data:
+        if entry["user"] == username:
+            friends_list.append(entry["friend"])
+        elif entry["friend"] == username:
+            friends_list.append(entry["user"])
+    return friends_list
 
 
 #-- Require login --
@@ -167,7 +197,16 @@ def feed():
     Loads all gigs from JSON and passes them to the feed.html template.
     """
     gigs = load_gigs()
-    return render_template("feed.html", gigs=gigs)
+    return render_template("feed.html", gigs=gigs, title="Global Feed")
+
+@app.route("/feed/friends")
+def friend_feed():
+    current_user = session.get("user")
+    gigs = load_gigs()
+    friends_list = get_friends(current_user) # returns list of usernames
+    # Only show gigs by user or friends
+    filtered_gigs = [g for g in gigs if g["username"] in friends_list + [current_user]]
+    return render_template("feed.html", gigs=filtered_gigs, title="Friend Activity")
 
 
 @app.route("/add_gig", methods=["GET","POST"])
@@ -270,11 +309,29 @@ def profile():
     
     return render_template("profile.html", user=session["user"], gigs=user_gigs)
 
+
 @app.route("/logout")
 def logout():
     session.pop("user", None)
     flash("Logged out successfully.", "info")
     return redirect(url_for("login"))
+
+
+@app.route("/add_friend/<friend_username>", methods=["POST"])
+def add_friend(friend_username):
+    current_user = session.get["user"]
+    friends = load_friends()
+    user_friends = next((f for f in friends if f["user"] == current_user), none)
+    if user_friends:
+        if friend_username not in user_friends["friends"]:
+            user_friends["friends"].append(friend_username)
+            save_friends(friends)
+            flash(f"You are now friends with {friend_username}!", "success")
+    else:
+        friends.append({"user": current_user, "friends": [friend_username]})
+        save_friends(friends)
+        flash(f"You are now friends with {friend_username}!", "success")
+    return redirect(url_for("profile"))
 
 
 # ---------------------------

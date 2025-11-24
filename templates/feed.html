@@ -6,6 +6,16 @@
 <h2>Gig Feed</h2>
 <hr>
 
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link {% if title=='Global Feed' %}active{% endif %}" href="{{ url_for('feed') }}">Global Feed</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if title=='Friend Activity' %}active{% endif %}" href="{{ url_for('friend_feed') }}">Friend Activity</a>
+    </li>
+</ul>
+
+
 {% if gigs %}
 	<ul class="list-group">
 	{% for gig in gigs %}

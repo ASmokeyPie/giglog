@@ -8,7 +8,7 @@
     {
         "username": "test2",
         "email": "test2@test2.com",
-        "password": "scrypt:32768:8:1$0S61l9T4gNMAAfs6$4b6f5f95c606f65c789953c4e0505c8b651c8bc1068d1caace63b2755597595df284738300724f7ac6276c826c7a788bfe5a66fb4591b20c75e0b52335255173",
-        "created_at": "2025-11-24 16:50:24"
+        "password": "scrypt:32768:8:1$1EUfTHSqzqiCWUIY$06bd581531f958132e5c8cbc176b08d460a09a3e224264099fc7180abd59181873f1644323207b16a4278d56487fee5f0f48ef75ffd40553dd0f5d173f09e6f4",
+        "created_at": "2025-11-24 18:41:56"
     }
 ]
