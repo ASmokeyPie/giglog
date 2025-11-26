@@ -376,7 +376,12 @@ def view_user(username):
     gigs = load_gigs()
     user_gigs = [g for g in gigs if g["username"] == username]
     
-    return render_template("user_profile.html", username=username, gigs=user_gigs)
+    # Check if the current user is already following this user
+    current_user = session["user"]
+    following = get_following(current_user)
+    is_following = username in following
+    
+    return render_template("user_profile.html", username=username, gigs=user_gigs, is_following=is_following)
 
 
 

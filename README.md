@@ -1,4 +1,4 @@
-# **GigLog**
+# **Giglog**
 
 A simple Flask-based web app for logging gigs, viewing activity feeds, and following other users.
 
