@@ -335,7 +335,7 @@ def logout():
     return redirect(url_for("login"))
 
 
-# ---------------------- FOLLOW USER ----------------------
+# ---------------------- FOLLOW/UNFOLLOW USER ----------------------
 
 @app.route("/follow/<username>", methods=["POST"])
 @login_required
@@ -362,6 +362,23 @@ def follow(username):
         flash(f"You already follow {username}.", "info")
 
     save_follows(data)
+    return redirect(url_for("view_user", username=username))
+
+
+@app.route("/unfollow/<username>", methods=["POST"])
+@login_required
+def unfollow(username):
+    current_user = session["user"]
+    data = load_follows()
+    
+    entry = next((u for u in data if u["user"] == current_user), None)
+    if entry and username in entry.get("following", []):
+        entry["following"].remove(username)
+        save_follows(data)
+        flash(f"You have unfollowed {username}.", "info")
+    else:
+        flash(f"You are not following {username}.", "warning")
+    
     return redirect(url_for("view_user", username=username))
 
 
