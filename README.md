@@ -8,7 +8,7 @@ The app uses JSON files to store users, gigs, and follow data, making it lightwe
 
 [![Python 3](https://img.shields.io/badge/python-3.x-blue)](https://www.python.org/)  
 [![Flask](https://img.shields.io/badge/Flask-2.x-purple)](https://palletsprojects.com/p/flask/)  
-[![Build Status](https://img.shields.io/github/actions/workflow/status/ASmokeyPie/giglog/main.yml?branch=main)](https://github.com/ASmokeyPie/giglog/actions)  
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ASmokeyPie/giglog/python-packages.yml?branch=main)](https://github.com/ASmokeyPie/giglog/actions)  
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)  
 
 ---
