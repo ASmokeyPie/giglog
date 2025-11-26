@@ -9,11 +9,13 @@ This project is designed as a learning and assessment piece for a university mod
 
 ---
 
-<p align="left">
-<!-- Python version --> <img src="https://img.shields.io/badge/Python-3.13-blue?logo=python&logoColor=white" alt="Python 3.13">
-<!-- Flask --> <img src="https://img.shields.io/badge/Flask-3.0-black?logo=flask" alt="Flask">
-<!-- GitHub Actions CI badge --> <img src="https://github.com/ASmokeyPie/giglog/actions/workflows/python-package.yml/badge.svg" alt="CI Status">
-<!-- Last commit --> <img src="https://img.shields.io/github/last-commit/ASmokeyPie/giglog?color=yellow" alt="Last Commit">
+![Last Commit](https://img.shields.io/github/last-commit/ASmokeyPie/giglog?color=yellow)
+![Repo Size](https://img.shields.io/github/repo-size/ASmokeyPie/giglog)
+![Python Version](https://img.shields.io/badge/python-3.13%2B-blue)
+![Flask](https://img.shields.io/badge/Flask-2.3-blue)
+![Build Status](https://img.shields.io/badge/https://github.com/ASmokeyPie/giglog)
+
+
 
 ---
 
