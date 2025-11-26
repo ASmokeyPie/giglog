@@ -2,7 +2,8 @@
     {
         "user": "test1",
         "following": [
-            "test2"
+            "test2",
+            "test3"
         ]
     }
 ]

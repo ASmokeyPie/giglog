@@ -15,7 +15,7 @@ app.secret_key = 'supersecret'
 # Paths to the JSON files that store app data
 DATA_FILE = "data/gigs.json"
 USERS_FILE = "data/users.json"
-FRIENDS_FILE = "data/friends.json"
+FOLLOWS_FILE = "data/follows.json"
 
 # -----------------------------
 # Custom Jinja2 template filter
@@ -73,34 +73,31 @@ def save_users(users):
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=4)
 
-# -- User Friends --
-def load_friends():
+# -- User Follows --
+def load_follows():
     """
     """
-    if not os.path.exists(FRIENDS_FILE):
+    if not os.path.exists(FOLLOWS_FILE):
         return []
-    with open(FRIENDS_FILE, "r") as f:
+    with open(FOLLOWS_FILE, "r") as f:
         return json.load(f)
 
-def save_friends(friends):
+def save_follows(follows):
     """
     """
-    with open(FRIENDS_FILE, "w") as f:
-        json.dump(friends, f, indent=4)
+    with open(FOLLOWS_FILE, "w") as f:
+        json.dump(follows, f, indent=4)
 
-def get_friends(username):
+def get_following(username):
     """
-    Return a list of usernames that are friends with the given username.
-    Assumes friends.json is a list of {"user": "...", "friend": "..."} objects or a similar structure.
+    Return a list of users that the given username is following.
     """
-    friends_data = load_friends()
-    friends_list = []
-    for entry in friends_data:
-        if entry["user"] == username:
-            friends_list.extend(entry.get("friends", []))
-        elif entry.get("friends") and username in entry["friends"]:
-            friends_list.append(entry["user"])
-    return friends_list
+    follows = load_follows()
+    entry = next((u for u in follows if u["user"] == username), None)
+    if entry:
+        return entry.get("following", [])
+    return []
+
 
 
 #-- Require login --
@@ -125,6 +122,9 @@ def index():
     Renders the index.html template.
     """
     return render_template("index.html")
+
+
+# ---------------------- REGISTER ----------------------
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -166,6 +166,9 @@ def register():
     
     return render_template("register.html")
 
+
+# ---------------------- LOGIN ----------------------
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -192,6 +195,9 @@ def login():
     
     return render_template("login.html")
 
+
+# ---------------------- FEED ----------------------
+
 @app.route("/feed")
 def feed():
     """
@@ -201,15 +207,19 @@ def feed():
     gigs = load_gigs()
     return render_template("feed.html", gigs=gigs, title="Global Feed")
 
-@app.route("/feed/friends")
-def friend_feed():
+@app.route("/feed/following")
+@login_required
+def following_feed():
     current_user = session.get("user")
     gigs = load_gigs()
-    friends_list = get_friends(current_user) # returns list of usernames
-    # Only show gigs by user or friends
-    filtered_gigs = [g for g in gigs if g["username"] in friends_list + [current_user]]
-    return render_template("feed.html", gigs=filtered_gigs, title="Friend Activity")
+    following = get_following(current_user) # returns list of usernames
+    
+    # Only show gigs by user or followed users
+    filtered_gigs = [g for g in gigs if g["username"] in following + [current_user]]
+    return render_template("feed.html", gigs=filtered_gigs, title="Followed Activity")
 
+
+# ---------------------- ADD GIG ----------------------
 
 @app.route("/add_gig", methods=["GET","POST"])
 @login_required
@@ -250,6 +260,8 @@ def add_gig():
     # For GET requests, show the form
     return render_template("add_gig.html")
 
+
+# ---------------------- EDIT + DELETE GIG ----------------------
 
 @app.route("/delete_gig/<int:index>", methods=["POST"])
 @login_required
@@ -297,6 +309,8 @@ def edit_gig(index):
     return render_template("edit_gig.html", gig=gig, index=index)
 
 
+# ---------------------- PROFILE ----------------------
+
 @app.route("/profile")
 @login_required
 def profile():
@@ -312,6 +326,8 @@ def profile():
     return render_template("profile.html", user=session["user"], gigs=user_gigs)
 
 
+# ---------------------- LOGOUT ----------------------
+
 @app.route("/logout")
 def logout():
     session.pop("user", None)
@@ -319,21 +335,51 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/add_friend/<friend_username>", methods=["POST"])
-def add_friend(friend_username):
-    current_user = session.get("user")
-    friends = load_friends()
-    user_friends = next((f for f in friends if f["user"] == current_user), None)
-    if user_friends:
-        if friend_username not in user_friends["friends"]:
-            user_friends["friends"].append(friend_username)
-            save_friends(friends)
-            flash(f"You are now friends with {friend_username}!", "success")
+# ---------------------- FOLLOW USER ----------------------
+
+@app.route("/follow/<username>", methods=["POST"])
+@login_required
+def follow(username):
+    current_user = session["user"]
+
+    if current_user == username:
+        flash("You cannot follow yourself!", "warning")
+        return redirect(url_for("profile"))
+
+    data = load_follows()
+
+    # Find current user's record
+    entry = next((u for u in data if u["user"] == current_user), None)
+
+    if not entry:
+        entry = {"user": current_user, "following": []}
+        data.append(entry)
+
+    if username not in entry["following"]:
+        entry["following"].append(username)
+        flash(f"You are now following {username}!", "success")
     else:
-        friends.append({"user": current_user, "friends": [friend_username]})
-        save_friends(friends)
-        flash(f"You are now friends with {friend_username}!", "success")
-    return redirect(url_for("profile"))
+        flash(f"You already follow {username}.", "info")
+
+    save_follows(data)
+    return redirect(url_for("view_user", username=username))
+
+
+@app.route("/user/<username>")
+@login_required
+def view_user(username):
+    users = load_users()
+    if not any(u["username"] == username for u in users):
+        flash("User not found.", "danger")
+        return redirect(url_for("feed"))
+    
+    gigs = load_gigs()
+    user_gigs = [g for g in gigs if g["username"] == username]
+    
+    return render_template("user_profile.html", username=username, gigs=user_gigs)
+
+
+
 
 
 # ---------------------------

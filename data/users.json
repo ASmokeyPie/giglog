@@ -10,5 +10,11 @@
         "email": "test2@test2.com",
         "password": "scrypt:32768:8:1$1EUfTHSqzqiCWUIY$06bd581531f958132e5c8cbc176b08d460a09a3e224264099fc7180abd59181873f1644323207b16a4278d56487fee5f0f48ef75ffd40553dd0f5d173f09e6f4",
         "created_at": "2025-11-24 18:41:56"
+    },
+    {
+        "username": "test3",
+        "email": "test3@test3.com",
+        "password": "scrypt:32768:8:1$aOUVq6FVFnKl7QlR$5e7d9b922f5c6c18078a0436b6170035135b965438562a70f3ef8b20a8f68aae4f455eb6b696b28355915e88de6b3a92de0462fd19ad42ce67b802d513ee2ee5",
+        "created_at": "2025-11-26 13:55:31"
     }
 ]
