@@ -5,12 +5,19 @@ import json
 from datetime import datetime
 import os
 from functools import wraps
+import uuid
 
 # Initialise the Flask app
 app = Flask(__name__)
 
 # Secret key used by Flask for session management and flash messages
 app.secret_key = 'supersecret'
+
+# Uploads folder configuration
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Create folder if it doesn't exist
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024 # 2MB limit
 
 # Paths to the JSON files that store app data
 DATA_FILE = "data/gigs.json"
@@ -240,11 +247,12 @@ def add_gig():
         gigs = load_gigs()
         
         new_gig = {
+            "id": str(uuid.uuid4()),    # Unique ID
             "artist": artist,
             "venue": venue,
             "date": date,
             "review": review,
-            "username": session["user"], # atttach gig to user
+            "username": session["user"],    # atttach gig to user
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
@@ -263,67 +271,104 @@ def add_gig():
 
 # ---------------------- EDIT + DELETE GIG ----------------------
 
-@app.route("/delete_gig/<int:index>", methods=["POST"])
+@app.route("/delete_gig/<gig_id>", methods=["POST"])
 @login_required
-def delete_gig(index):
+def delete_gig(gig_id):
     """
-    Route for deleting a gig.
-    Accepts a POST request with the gig index.
-    Removes the gig from the JSON file if the index is valid.
+    Delete gig by ID
     """
     gigs = load_gigs()
-    if 0 <= index < len(gigs):
-        gigs.pop(index)  # Remove the gig at the given index
-        save_gigs(gigs)
-        flash("Gig deleted successfully.", "success")
-    return redirect(url_for("feed"))
+    for i, gig in enumerate(gigs):
+        if gig.get("id") == gig_id:
+            # Only allow owner to delete
+            if gig.get("username") != session["user"]:
+                flash("You are not allowed to delete this gig.", "danger")
+                return redirect(url_for("profile"))
+            gigs.pop(i)
+            save_gigs(gigs)
+            flash("Gig deleted successfully.", "success")
+            return redirect(url_for("profile"))
+    flash("Gig not found.", "danger")
+    return redirect(url_for("profile"))
 
 
-@app.route("/edit_gig/<int:index>", methods=["GET", "POST"])
+@app.route("/edit_gig/<gig_id>", methods=["GET", "POST"])
 @login_required
-def edit_gig(index):
+def edit_gig(gig_id):
     """
-    Route for editing a gig.
+    Edit gig by ID
     - GET: Shows the form pre-filled with the gig data.
     - POST: Updates the gig in the JSON file and redirects to feed.
     """
     gigs = load_gigs()
+    # Find the gig
+    gig = next((g for g in gigs if g.get("id") == gig_id), None)
     
-    # Validate index
-    if index < 0 or index >= len(gigs):
-        flash("Invalid gig index.", "danger")
-        return redirect(url_for("feed"))
+    if gig is None:
+        flash("Gig not found.", "danger")
+        return redirect(url_for("profile"))
+    
+    # Check owner
+    if gig.get("username") != session["user"]:
+        flash("You are not allowed to edit this gig.", "danger")
+        return redirect(url_for("profile"))
     
     if request.method == "POST":
         # Update the gig details from the form
-        gigs[index]["artist"] = request.form["artist"]
-        gigs[index]["venue"] = request.form["venue"]
-        gigs[index]["date"] = request.form["date"]
-        gigs[index]["review"] = request.form["review"]
+        gig["artist"] = request.form["artist"]
+        gig["venue"] = request.form["venue"]
+        gig["date"] = request.form["date"]
+        gig["review"] = request.form["review"]
         save_gigs(gigs)
         flash("Gig updated successfully!", "success")
-        return redirect(url_for("feed"))
+        return redirect(url_for("profile"))
     
-    # GET request → show the edit form
-    gig = gigs[index]
-    return render_template("edit_gig.html", gig=gig, index=index)
+    # GET request -> show the edit form
+    return render_template("edit_gig.html", gig=gig, gig_id=gig_id)
 
 
 # ---------------------- PROFILE ----------------------
 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     """
-    Profile page route.
-    Renders the profile.html template.
+    GET: display profile and gigs
+    POST: update bio and profile picture
     """
+    current_user = session["user"]
+    users = load_users()
+    user = next((u for u in users if u["username"] == current_user), None)
+    
+    if not user:
+        flash("User not found.", "danger")
+        return redirect(url_for("feed"))
+    
+    if request.method == "POST":
+        # Update bio
+        bio = request.form.get("bio", "").strip()
+        user["bio"] = bio
+        
+        #Update profile picture
+        file = request.files.get("profile_pic")
+        if file and file.filename:
+            file_ext = file.filename.rsplit(".", 1)[-1]
+            filename = f"{current_user}_{int(datetime.now().timestamp())}.{file_ext}"
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(filepath)
+            user["profile_pic"] = filename
+        
+        save_users(users)
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for("profile"))
+    
+    #Load user's gigs
     gigs = load_gigs()
     
     # Filter only the current user's gigs
     user_gigs = [g for g in gigs if g.get("username") == session["user"]]
     
-    return render_template("profile.html", user=session["user"], gigs=user_gigs)
+    return render_template("profile.html", user=user, gigs=user_gigs)
 
 
 # ---------------------- LOGOUT ----------------------
@@ -386,7 +431,9 @@ def unfollow(username):
 @login_required
 def view_user(username):
     users = load_users()
-    if not any(u["username"] == username for u in users):
+    user = next((u for u in users if u["username"] == username), None)
+    
+    if not user:
         flash("User not found.", "danger")
         return redirect(url_for("feed"))
     
@@ -398,7 +445,7 @@ def view_user(username):
     following = get_following(current_user)
     is_following = username in following
     
-    return render_template("user_profile.html", username=username, gigs=user_gigs, is_following=is_following)
+    return render_template("user_profile.html", username=username, user=user, gigs=user_gigs, is_following=is_following)
 
 
 

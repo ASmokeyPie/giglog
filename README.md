@@ -1,184 +1,113 @@
-# **Giglog**
+# Giglog
 
-A simple Flask-based web app for logging gigs, viewing activity feeds, and following other users.
+**Giglog** is a simple web application built with **Flask** that allows users to log, edit, and view music gigs they have attended. Users can register, create profiles, add gig entries, follow other users, and browse a global or followed users' feed. 
 
-GigLog is a lightweight social-style application built with Flask.
-Users can register, log in, add gigs they’ve attended, and browse a live feed of activity. A follow system lets users keep up with the gig history of their friends or favourite people.
-
-This project is designed as a learning and assessment piece for a university module and aims to demonstrate full-stack fundamentals using Python, Flask, HTML, Bootstrap, and JSON data storage.
-
----
-
-![Last Commit](https://img.shields.io/github/last-commit/ASmokeyPie/giglog?color=yellow)
-![Repo Size](https://img.shields.io/github/repo-size/ASmokeyPie/giglog)
-![Python Version](https://img.shields.io/badge/python-3.13%2B-blue)
-![Flask](https://img.shields.io/badge/Flask-2.3-blue)
-![Build Status](https://img.shields.io/badge/https://github.com/ASmokeyPie/giglog)
-
-
+The app uses JSON files to store users, gigs, and follow data, making it lightweight and easy to run locally.
 
 ---
 
 ## Features
-### User Accounts
 
-- User registration with validation
+### User Management
+- Register and log in with username and email.
+- Secure password storage with hashing.
+- Profile page with bio and profile picture upload.
+- View other users' profiles and follow/unfollow them.
 
-- Secure login using hashed passwords
+### Gigs
+- Add new gigs with details: artist, venue, date, review.
+- Edit or delete your own gigs.
+- Each gig is linked to the user who created it.
+- Global feed showing all gigs.
+- Followed feed showing gigs from users you follow.
 
-- Session-based authentication
-
-- Profile page showing all gigs created by the user
-
-### Gig Logging
-
-Add gigs with:
-
-- Artist
-
-- Venue
-
-- Date
-
-- Review
-
-Edit and delete existing gig entries
-
-All gig data stored in gigs.json
-
-### Activity Feeds
-
-Global Feed: Shows all gigs from all users
-
-Following Activity: Shows gigs only from people the user follows
-
-Feed items display the artist, venue, date, review, and creator
-
-### Follow System
-
-Users can view other users’ profiles
-
-Follow/unfollow functionality
-
-Following data stored in follows.json
-
-Followed activity appears in a dedicated feed tab
-
-### JSON-Based Data Storage
-
-No database required — the app uses JSON for persistence:
-
-users.json — user accounts
-
-gigs.json — gig entries
-
-follows.json — follow relationships
+### Interface
+- Bootstrap 5 responsive UI.
+- Flash messages for feedback.
+- Navbar with dynamic login/logout links.
+- Sticky footer that stays at the bottom on short pages.
 
 ---
 
-## Project Structure
+## Installation
 
-giglog/
-│
-├── app.py                # Main Flask application
-├── data/
-│   ├── users.json        # Registered users
-│   ├── gigs.json         # Logged gigs
-│   └── follows.json      # Follow relationships
-│
-├── templates/
-│   ├── base.html
-│   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   ├── feed.html
-│   ├── add_gig.html
-│   ├── edit_gig.html
-│   ├── profile.html
-│   └── user_profile.html
-│
-└── static/
-    ├── css/
-    └── js/
+1. **Clone the repository**:
+
+```
+git clone https://github.com/ASmokeyPie/giglog.git
+cd giglog
+```
+2. Create a virtual environment:
+```
+python -m venv env
+```
+3. Activate the virtual environment:
+
+- Windows:
+```
+env\Scripts\activate
+```
+- macOS/Linux:
+```
+source env/bin/activate
+```
+4. Install dependencies:
+```
+pip install flask werkzeug
+```
 
 ---
 
-## Technologies Used
+## Running the App
 
-- Python 3.13
+1. Ensure the data/ folder exists with gigs.json, users.json, and follows.json. Empty lists [] can be used for initial JSON files.
+
+2. Run the Flask app:
+```
+python app.py
+```
+3. Open your browser and visit:
+```
+http://127.0.0.1:5000
+```
+
+---
+
+## Usage
+
+- Register a new account or log in.
+
+- Update your profile with bio and picture.
+
+- Add gigs using the Add Gig page.
+
+- View your gigs on your Profile page.
+
+- Edit or delete your own gigs.
+
+- Browse the Feed for all gigs.
+
+- Follow other users to see their gigs in the Following Feed.
+
+---
+
+## Notes
+- Data is stored in local JSON files (data/gigs.json, data/users.json, data/follows.json).
+
+- Profile pictures are uploaded to static/uploads/.
+
+- The app is for local development and learning purposes. Not recommended for production use.
+
+---
+
+## Technologies
+
+- Python 3
 
 - Flask
 
-- Werkzeug for secure password hashing
+- Werkzeug (password hashing)
 
-- Bootstrap 5 for UI
+- Bootstrap 5 (UI)
 
-- JSON files for persistence
-
-- Jinja2 templating
-
----
-
-## Running the App Locally
-
-1. Clone the repository
-'
-git clone https://github.com/https://github.com/ASmokeyPie/giglog.git
-cd giglog
-'
-
-2. Create a virtual environment
-'python -m venv env'
-
-3. Activate the environment
-
-Windows:
-'env\Scripts\activate'
-
-Mac/Linux:
-'source env/bin/activate'
-
-4. Install dependencies
-
-'pip install -r requirements.txt'
-
-5. Run the development server
-
-'python app.py'
-
-
-App will run at:
-http://127.0.0.1:5000
-
----
-
-## Security Notes
-
-This app uses session cookies but does not implement CSRF protection.
-
-JSON storage is not encrypted.
-
-For production, a real database and improved auth would be required.
-
----
-
-##Future Improvements
-
-- User avatars
-
-- Real-time notifications
-
-- Search for gigs or users
-
-- Pagination for feeds
-
-- Swap JSON files for a SQL database
-
-- Unfollow button
-
----
-
-## License
-
-This project is for educational use.
-You may modify or adapt it freely.
+- JSON (data storage)

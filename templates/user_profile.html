@@ -2,38 +2,65 @@
 {% block title %}{{ username }}'s Profile{% endblock %}
 
 {% block content %}
-<h2>{{ username }}'s Profile</h2>
-<hr>
 
-{% if username != session.user %}
-	{% if is_following %}
-		<!-- Unfollow button -->
-		<form action="{{ url_for('unfollow', username=username) }}" method="post" style="display:inline;">
-			<button type="submit" class="btn btn-secondary">
-				<i class="bi bi-check-circle-fill"></i> Following
-			</button>
-		</form>
-	{% else %}
-		<!-- Follow button -->
-		<form action="{{ url_for('follow', username=username) }}" method="post" style="display:inline;">
-			<button type="submit" class="btn btn-primary">
-				<i class="bi bi-person-plus-fill"></i> Follow
-			</button>
-		</form>
-	{% endif %}
-{% endif %}
+<div class="card shadow-sm p-4 mb-4" style="max-width: 700px; margin:auto;">
+    <div class="d-flex align-items-center mb-3">
 
-<h3 class="mt-4">Gigs Logged</h3>
-<ul class="list-group">
-	{% for gig in gigs %}
-		<li class="list-group-item">
-			<strong>{{ gig.artist }}</strong> - {{ gig.venue }}
+        <!-- Profile Picture -->
+        {% if user.profile_pic %}
+            <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}"
+                 class="rounded-circle"
+                 width="120" height="120"
+                 style="object-fit: cover;">
+        {% else %}
+            <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center"
+                 style="width:120px; height:120px; color:white;">
+                <span class="fs-1">{{ username[0]|upper }}</span>
+            </div>
+        {% endif %}
+
+        <div class="ms-4">
+            <h2 class="mb-1">{{ username }}</h2>
+
+            {% if user.bio %}
+                <p>{{ user.bio }}</p>
+            {% else %}
+                <p class="text-muted"><em>No bio provided.</em></p>
+            {% endif %}
+
+            {% if username != session.user %}
+                {% if is_following %}
+                    <form action="{{ url_for('unfollow', username=username) }}" method="POST">
+                        <button class="btn btn-secondary">
+                            Following
+                        </button>
+                    </form>
+                {% else %}
+                    <form action="{{ url_for('follow', username=username) }}" method="POST">
+                        <button class="btn btn-primary">
+                            Follow
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<h3 class="mt-5 mb-3 text-center">Gigs Logged</h3>
+
+<ul class="list-group" style="max-width: 700px; margin:auto;">
+    {% for gig in gigs %}
+        <li class="list-group-item">
+            <strong>{{ gig.artist }}</strong> — {{ gig.venue }}
 			<br>
-			<small>{{ gig.date | datetimeformat }}</small>
+            <small>{{ gig.date | datetimeformat }}</small>
 			<br>
-			<em>{{ gig.review }}</em>
-		</li>
-	{% endfor %}
+            <em>{{ gig.review }}</em>
+        </li>
+    {% else %}
+        <li class="list-group-item text-center">This user hasn't logged any gigs yet.</li>
+    {% endfor %}
 </ul>
 
 {% endblock %}

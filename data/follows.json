@@ -2,7 +2,20 @@
     {
         "user": "test1",
         "following": [
+            "test3",
             "test2"
+        ]
+    },
+    {
+        "user": "test3",
+        "following": [
+            "test2"
+        ]
+    },
+    {
+        "user": "test2",
+        "following": [
+            "test1"
         ]
     }
 ]

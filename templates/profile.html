@@ -1,35 +1,77 @@
 {% extends "base.html" %}
-
-{% block title %}Profile{% endblock %}
+{% block title %}Your Profile{% endblock %}
 
 {% block content %}
-<h2>{{ user }}'s Profile</h2>
-<hr>
 
-<h4>Your logged gigs</h4>
+<div class="card shadow-sm p-4 mb-4" style="max-width: 700px; margin:auto;">
+    <div class="d-flex align-items-center mb-3">
+
+        <!-- Profile Picture -->
+        <div>
+            {% if user.profile_pic %}
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}"
+                     class="rounded-circle"
+                     width="120" height="120"
+                     style="object-fit: cover;">
+            {% else %}
+                <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center"
+                     style="width:120px; height:120px; color:white;">
+                    <span class="fs-1">{{ user.username }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+		<!-- User Info -->
+        <div class="ms-4">
+            <h2 class="mb-1">{{ user.username }}</h2>
+            <p class="text-muted mb-0">Member since {{ user.created_at[:10] }}</p>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="mt-3">
+		<!-- User Bio -->
+        <div class="mb-3">
+            <label class="form-label">Bio</label>
+            <textarea name="bio" class="form-control" rows="3">{{ user.bio or '' }}</textarea>
+        </div>
+		<!-- Image Upload -->
+        <div class="mb-3">
+            <label class="form-label">Profile Picture</label>
+            <input type="file" name="profile_pic" class="form-control">
+        </div>
+
+        <button class="btn btn-primary">Update Profile</button>
+    </form>
+</div>
+
+<h3 class="mt-5 mb-3 text-center">Your Gigs</h3>
 
 {% if gigs %}
-	<ul class="list-group">
-	{% for gig in gigs %}
-		<li class="list-group-item">
-			<strong>{{ gig.artist }}</strong> - {{ gig.venue }}
+    <ul class="list-group" style="max-width: 700px; margin:auto;">
+	<!-- User Gigs -->
+    {% for gig in gigs %}
+        <li class="list-group-item">
+            <strong>{{ gig.artist }}</strong> — {{ gig.venue }}
 			<br>
-			<small>{{ gig.date | datetimeformat }}</small>
+            <small>{{ gig.date | datetimeformat }}</small>
 			<br>
-			<em>{{ gig.review }}</em>
+            <em>{{ gig.review }}</em>
 			<br>
-			<!-- Delete button -->
-			<form action="{{ url_for('delete_gig', index=loop.index0) }}" method="POST" style="display:inline;">
-				<button type="submit" class="btn btn-sm btn-danger">Delete</button>
-			</form>
-			<!-- Edit button -->
-			<form action="{{ url_for('edit_gig', index=loop.index0) }}" method="GET" style="display:inline;">
-				<button type="submit" class="btn btn-sm btn-warning">Edit</button>
-			</form>
-		</li>
-	{% endfor %}
-	</ul>
+			
+			<!-- Edit / Delete Gigs -->
+            <div class="mt-2">
+                <form action="{{ url_for('delete_gig', gig_id=gig.id) }}" method="POST" style="display:inline;">
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </form>
+                <form action="{{ url_for('edit_gig', gig_id=gig.id) }}" method="GET" style="display:inline;">
+                    <button class="btn btn-sm btn-warning">Edit</button>
+                </form>
+            </div>
+        </li>
+    {% endfor %}
+    </ul>
 {% else %}
-	<p>Your logged gigs will appear here.</p>
+    <p class="text-center">You haven't logged any gigs yet.</p>
 {% endif %}
+
 {% endblock %}

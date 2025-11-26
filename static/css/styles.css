@@ -1,0 +1,17 @@
+html, body {
+        height: 100%; /* Full viewport height */
+        margin: 0;
+    }
+
+body {
+	display: flex;
+	flex-direction: column; /* Stack navbar, content, footer */
+}
+
+.content-wrapper {
+	flex: 1; /* Take remaining space so footer is pushed down */
+}
+
+.card {
+	border-radius: 12px;
+}
