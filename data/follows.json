@@ -17,5 +17,11 @@
         "following": [
             "test1"
         ]
+    },
+    {
+        "user": "Andrew",
+        "following": [
+            "Oceane"
+        ]
     }
 ]

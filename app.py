@@ -191,7 +191,7 @@ def login():
                 # Verify hashed password
                 if check_password_hash(user["password"], password):
                     session["user"] = username
-                    flash("Logeed in successfully!", "success")
+                    flash("Logged in successfully!", "success")
                     return redirect(url_for("feed"))
                 else:
                     flash("Incorrect password.", "danger")
