@@ -24,5 +24,3 @@ jobs:
 
     - name: Run Tests
       run: pytest -v
-      env:
-        PYTHONPATH: ${{ github.workspace }}/giglog

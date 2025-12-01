@@ -1,7 +1,7 @@
 import os
 import tempfile
 import pytest
-from giglog.app import app
+from app import app
 
 @pytest.fixture
 def client():
