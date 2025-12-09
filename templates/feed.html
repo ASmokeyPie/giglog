@@ -3,41 +3,61 @@
 {% block title %}Feed{% endblock %}
 
 {% block content %}
-<h2>Gig Feed</h2>
-<hr>
+<div class="container mt-4">
 
-<ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-        <a class="nav-link {% if title=='Global Feed' %}active{% endif %}" href="{{ url_for('feed') }}">Global Feed</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {% if title=='Followed Activity' %}active{% endif %}" href="{{ url_for('following_feed') }}">Followed Activity</a>
-    </li>
-</ul>
+    <h2 class="mb-3 text-center">Gig Feed</h2>
+    <hr>
 
+    <!-- Tabs for Global Feed / Followed Activity -->
+    <ul class="nav nav-tabs mb-4 justify-content-center">
+        <li class="nav-item">
+            <a class="nav-link {% if title=='Global Feed' %}active{% endif %}" 
+               href="{{ url_for('feed') }}" style="color: IndianRed;">
+               Global Feed
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if title=='Followed Activity' %}active{% endif %}" 
+               href="{{ url_for('following_feed') }}" style="color: IndianRed;">
+               Followed Activity
+            </a>
+        </li>
+    </ul>
 
-{% if gigs %}
-	<ul class="list-group">
-	{% for gig in gigs %}
-    <li class="list-group-item d-flex justify-content-between align-items-start">
-        <div>
-            <strong>{{ gig.artist }}</strong> - {{ gig.venue }}
-            <br>
-            <small>{{ gig.date | datetimeformat }}</small>
-            <br>
-            <em>{{ gig.review }}</em>
-			<br>
-			<small>
-				Logged by: 
-				<a href="{{ url_for('view_user', username=gig.username) }}">
-					{{ gig.username }}
-				</a>
-			</small>
+    {% if gigs %}
+        <ul class="list-group">
+            {% for gig in gigs %}
+            <li class="list-group-item mb-3 shadow-sm rounded">
+                <!-- Gig main info -->
+                <div class="d-flex flex-column gap-2">
+                    <!-- Artist -->
+                    <h5 class="fw-bold">{{ gig.artist }}</h5>
+
+                    <!-- Venue and Date Pills -->
+                    <div class="d-flex flex-wrap gap-2 mb-1">
+                        <span class="badge bg-secondary">{{ gig.venue }}</span>
+                        <span class="text-dark">{{ gig.date | datetimeformat }}</span>
+                    </div>
+
+                    <!-- Review -->
+                    <p class="mb-1"><em>{{ gig.review }}</em></p>
+
+                    <!-- Logged by -->
+                    <small class="text-muted">
+                        Logged by: 
+                        <a href="{{ url_for('view_user', username=gig.username) }}" class="text-danger fw-bold">
+                            {{ gig.username }}
+                        </a>
+                    </small>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-warning text-center" role="alert">
+            No gigs logged yet.
         </div>
-    </li>
-{% endfor %}
-	</ul>
-{% else %}
-	<p>No gigs logged yet.</p>
-{% endif %}
+    {% endif %}
+
+</div>
 {% endblock %}
