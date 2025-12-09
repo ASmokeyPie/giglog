@@ -17,7 +17,41 @@ body {
 	border-radius: 12px;
 }
 
+/* Button hover effect */
+.btn-lg {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-lg:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom dark orange for all btn-primary buttons */
+.btn-primary {
+    background-color: #d35400;   /* Dark orange */
+    border-color: #d35400;       /* Match border to background */
+    color: #fff;                 /* Keep text white */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: #e67e22;   /* Slightly lighter orange on hover */
+    border-color: #e67e22;
+    color: #fff;
+}
+
+
+/* Image  animation */
 #home-main-img {
 	
 	border: 10px double black;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#home-main-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }

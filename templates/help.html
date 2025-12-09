@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Help & FAQ{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Help & Frequently Asked Questions</h1>
+	<hr>
+    
+    <h3>1. How do I register?</h3>
+    <p>Click on the Register link in the navigation bar, fill out your username, email, and password, and submit the form. Make sure your passwords match!</p>
+    
+    <h3>2. How can I add a gig?</h3>
+    <p>After logging in, navigate to "Add Gig", fill in the details (artist, venue, date, review), and click submit.</p>
+    
+    <h3>3. Can I follow other users?</h3>
+    <p>Yes! Visit a user's profile and click the follow button. You can also unfollow them at any time.</p>
+    
+    <h3>4. How do I edit or delete a gig?</h3>
+    <p>Go to your profile, find the gig you want to edit or delete, and click the corresponding button. You can only edit or delete your own gigs.</p>
+    
+    <h3>5. How do I update my profile?</h3>
+    <p>On your profile page, you can update your bio and upload a profile picture. Make sure your picture is under 2MB.</p>
+    
+    <h3>6. What if I forget my password?</h3>
+    <p>Currently, password recovery isn’t implemented. Be sure to keep your login details safe.</p>
+</div>
+<p>Still need help? <a href="{{ url_for('contact') }}" style="color: IndianRed;">Get in touch!</a></p>
+{% endblock %}

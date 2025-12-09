@@ -15,9 +15,9 @@ app.secret_key = 'supersecret'
 
 # Uploads folder configuration
 UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True) # Create folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Create folder if it doesn't exist
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024 # 2MB limit
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # 2MB upload limit
 
 # Paths to the JSON files that store app data
 DATA_FILE = "data/gigs.json"
@@ -40,6 +40,9 @@ def datetimeformat(value, format='%d %b %Y'):
 # ---------------------------
 @app.context_processor
 def inject_now():
+    """
+    Inject the current year into all templates as 'current_year'
+    """
     return {'current_year': datetime.now().year}
 
 
@@ -112,17 +115,20 @@ def get_following(username):
     return []
 
 
-
-#-- Require login --
+#-- Require login decorator --
 def login_required(f):
     """
-    Provides login required functionality to any route wrapped with this function
+    Provides login required functionality to any route wrapped with this function.
+    Redirects users to login page if they are not logged in.
     """
     @wraps(f)
     def wrapper(*args, **kwargs):
+        # Check if 'user' exists in session, i.e., user is logged in
         if "user" not in session:
             flash("Please log in first.", "warning")
+            # Redirect to login page if not logged in
             return redirect(url_for("login"))
+        # User is logged in, proceed to the wrapped route
         return f(*args, **kwargs)
     return wrapper
 
@@ -141,12 +147,12 @@ def index():
 
 
 # ---------------------- REGISTER ----------------------
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """
     User registration page route.
-    Renders the register.html template.
+    GET: Display registration form.
+    POST: Process registration form, validate, create new user, save to JSON, redirect to login.
     """
     if request.method == "POST":
         username = request.form["username"].strip()
@@ -157,7 +163,7 @@ def register():
         # Load users
         users = load_users()
         
-        # Validation
+        # Validation checks
         if any(u["username"] == username for u in users):
             flash("Username already taken.", "danger")
             return redirect(url_for("register"))
@@ -170,7 +176,7 @@ def register():
             flash("Passwords do not match.", "danger")
             return redirect(url_for("register"))
         
-        # Create new user
+        # Create new user dictionary
         new_user = {
             "username": username,
             "email": email,
@@ -184,16 +190,17 @@ def register():
         flash("Registration successful! You can now log in.", "success")
         return redirect(url_for("login"))
     
+    # GET request -> show registration form
     return render_template("register.html")
 
 
 # ---------------------- LOGIN ----------------------
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """
     User login page route.
-    Checks for valid log in of user and renders the login.html template.
+    GET: Show login form.
+    POST: Validate login credentials, set session, redirect to feed.
     """
     if request.method == "POST":
         username = request.form["username"].strip()
@@ -201,35 +208,36 @@ def login():
         
         users = load_users()
         
-        # Check for username match
+        # Loop through users to find matching username
         for user in users:
             if user["username"] == username:
-                
-                # Verify hashed password
+                # Verify hashed password using werkzeug
                 if check_password_hash(user["password"], password):
+                    # Save username in session to mark user as logged in
                     session["user"] = username
                     flash("Logged in successfully!", "success")
                     return redirect(url_for("feed"))
                 else:
+                    # Password does not match
                     flash("Incorrect password.", "danger")
                     return redirect(url_for("login"))
         
+        # Username not found in users JSON
         flash("Username not found.", "danger")
         return redirect(url_for("login"))
     
+    # GET request -> render login form
     return render_template("login.html")
 
 
 # ---------------------- FEED ----------------------
-
 @app.route("/feed")
 def feed():
     """
     Feed page route.
-    Loads all gigs from JSON and passes them to the feed.html template.
+    Loads all gigs from JSON, sorts by created_at descending, renders feed.html.
     """
     gigs = load_gigs()
-    # Sort gigs by created_at descending (most recent first)
     gigs = sorted(gigs, key=lambda g: g["created_at"], reverse=True)
     return render_template("feed.html", gigs=gigs, title="Global Feed")
 
@@ -238,81 +246,75 @@ def feed():
 def following_feed():
     """
     Following feed page route.
-    Loads all gigs from followed users + user's own and passes them to the feed.html template in a separate tab.
+    Shows gigs from users that the current user is following + their own.
     """
     current_user = session.get("user")
     gigs = load_gigs()
-    following = get_following(current_user) # returns list of usernames
+    following = get_following(current_user)  # List of usernames
     
-    # Only show gigs by user or followed users
     filtered_gigs = [g for g in gigs if g["username"] in following + [current_user]]
-    # Sort filtered gigs by created_at descending
     filtered_gigs = sorted(filtered_gigs, key=lambda g: g["created_at"], reverse=True)
     return render_template("feed.html", gigs=filtered_gigs, title="Followed Activity")
 
 
 # ---------------------- ADD GIG ----------------------
-
 @app.route("/add_gig", methods=["GET","POST"])
 @login_required
 def add_gig():
     """
     Route for adding a new gig.
-    - GET: Show the empty form to add a gig.
-    - POST: Process form submission, add the new gig to JSON, and redirect to feed.
+    GET: Display empty form.
+    POST: Save new gig to JSON and redirect to feed.
     """
     if request.method == "POST":
-        # Retrieve form data
         artist = request.form["artist"]
         venue = request.form["venue"]
         date = request.form["date"]
         review = request.form["review"]
         
-        # Load existing gigs and append the new one
         gigs = load_gigs()
         
         new_gig = {
-            "id": str(uuid.uuid4()),    # Unique ID
+            "id": str(uuid.uuid4()),           # Unique ID for gig
             "artist": artist,
             "venue": venue,
             "date": date,
             "review": review,
-            "username": session["user"],    # atttach gig to user
+            "username": session["user"],       # Attach gig to current user
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
         gigs.append(new_gig)
-        
-        # Save updated gig list
         save_gigs(gigs)
         
-        # Flash a success message and redirect to the feed
         flash("Gig added successfully!", "success")
         return redirect(url_for("feed"))
     
-    # For GET requests, show the form
     return render_template("add_gig.html")
 
 
-# ---------------------- EDIT + DELETE GIG ----------------------
-
+# ---------------------- DELETE + EDIT GIG ----------------------
 @app.route("/delete_gig/<gig_id>", methods=["POST"])
 @login_required
 def delete_gig(gig_id):
     """
-    Delete gig by ID
+    Delete gig by ID if the current user is the owner.
     """
     gigs = load_gigs()
     for i, gig in enumerate(gigs):
         if gig.get("id") == gig_id:
-            # Only allow owner to delete
+            # Ensure only the owner can delete the gig
             if gig.get("username") != session["user"]:
                 flash("You are not allowed to delete this gig.", "danger")
                 return redirect(url_for("profile"))
+            
+            # Remove gig from list and save
             gigs.pop(i)
             save_gigs(gigs)
             flash("Gig deleted successfully.", "success")
             return redirect(url_for("profile"))
+    
+    # Gig ID not found
     flash("Gig not found.", "danger")
     return redirect(url_for("profile"))
 
@@ -321,25 +323,25 @@ def delete_gig(gig_id):
 @login_required
 def edit_gig(gig_id):
     """
-    Edit gig by ID
-    - GET: Shows the form pre-filled with the gig data.
-    - POST: Updates the gig in the JSON file and redirects to feed.
+    Edit gig by ID.
+    GET: Pre-fill form with gig data.
+    POST: Update gig details and save to JSON.
     """
     gigs = load_gigs()
-    # Find the gig
+    # Find the gig with the matching ID
     gig = next((g for g in gigs if g.get("id") == gig_id), None)
     
     if gig is None:
         flash("Gig not found.", "danger")
         return redirect(url_for("profile"))
     
-    # Check owner
+    # Check if current user is the owner
     if gig.get("username") != session["user"]:
         flash("You are not allowed to edit this gig.", "danger")
         return redirect(url_for("profile"))
     
     if request.method == "POST":
-        # Update the gig details from the form
+        # Update gig fields with form data
         gig["artist"] = request.form["artist"]
         gig["venue"] = request.form["venue"]
         gig["date"] = request.form["date"]
@@ -348,21 +350,25 @@ def edit_gig(gig_id):
         flash("Gig updated successfully!", "success")
         return redirect(url_for("profile"))
     
-    # GET request -> show the edit form
+    # GET request -> show edit form pre-filled with gig data
     return render_template("edit_gig.html", gig=gig, gig_id=gig_id)
 
 
 # ---------------------- PROFILE ----------------------
-
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     """
-    GET: display profile and gigs
-    POST: update bio and profile picture
+    User profile page.
+    GET: Show profile info and user's gigs.
+    POST: Update bio and profile picture.
     """
-    current_user = session["user"]
+    current_user = session["user"]  # Get the logged-in username from session
+
+    # Load all users from JSON file
     users = load_users()
+    
+    # Find the current user's data
     user = next((u for u in users if u["username"] == current_user), None)
     
     if not user:
@@ -370,61 +376,83 @@ def profile():
         return redirect(url_for("feed"))
     
     if request.method == "POST":
+        # ----------------------------
         # Update bio
-        bio = request.form.get("bio", "").strip()
-        user["bio"] = bio
+        # ----------------------------
+        bio = request.form.get("bio", "").strip()  # Get bio from form, default empty string
+        user["bio"] = bio  # Save to user dictionary
         
-        #Update profile picture
-        file = request.files.get("profile_pic")
-        if file and file.filename:
+        # ----------------------------
+        # Update profile picture
+        # ----------------------------
+        file = request.files.get("profile_pic")  # Get uploaded file from form
+        if file and file.filename:  # Check if a file was actually uploaded
+            # Extract file extension
             file_ext = file.filename.rsplit(".", 1)[-1]
+            # Create a unique filename using username + current timestamp
             filename = f"{current_user}_{int(datetime.now().timestamp())}.{file_ext}"
+            # Full path to save the file
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-            file.save(filepath)
+            file.save(filepath)  # Save the file to the uploads folder
+            # Update user dictionary with the filename
             user["profile_pic"] = filename
         
+        # Save the updated users list back to the JSON file
         save_users(users)
+        
         flash("Profile updated successfully!", "success")
         return redirect(url_for("profile"))
     
-    #Load user's gigs
+    # ----------------------------
+    # GET request - display profile
+    # ----------------------------
+    # Load all gigs
     gigs = load_gigs()
-    
     # Filter only the current user's gigs
-    user_gigs = [g for g in gigs if g.get("username") == session["user"]]
+    user_gigs = [g for g in gigs if g.get("username") == current_user]
     
+    # Render profile page with user info and their gigs
     return render_template("profile.html", user=user, gigs=user_gigs)
 
 
 # ---------------------- LOGOUT ----------------------
-
 @app.route("/logout")
 def logout():
+    """
+    Logout route.
+    Clears the session for the current user.
+    """
     session.pop("user", None)
     flash("Logged out successfully.", "info")
     return redirect(url_for("login"))
 
 
 # ---------------------- FOLLOW/UNFOLLOW USER ----------------------
-
 @app.route("/follow/<username>", methods=["POST"])
 @login_required
 def follow(username):
+    """
+    Follow a user.
+    Adds the username to the current user's following list.
+    """
     current_user = session["user"]
 
     if current_user == username:
+        # Prevent users from following themselves
         flash("You cannot follow yourself!", "warning")
         return redirect(url_for("profile"))
 
     data = load_follows()
-
-    # Find current user's record
+    
+    # Find the current user's follow record
     entry = next((u for u in data if u["user"] == current_user), None)
 
+    # If record does not exist, create one
     if not entry:
         entry = {"user": current_user, "following": []}
         data.append(entry)
 
+    # Add the target username to the following list if not already following
     if username not in entry["following"]:
         entry["following"].append(username)
         flash(f"You are now following {username}!", "success")
@@ -438,11 +466,18 @@ def follow(username):
 @app.route("/unfollow/<username>", methods=["POST"])
 @login_required
 def unfollow(username):
+    """
+    Unfollow a user.
+    Removes the username from the current user's following list.
+    """
     current_user = session["user"]
     data = load_follows()
     
+    # Find current user's follow record
     entry = next((u for u in data if u["user"] == current_user), None)
+    
     if entry and username in entry.get("following", []):
+        # Remove user from following list
         entry["following"].remove(username)
         save_follows(data)
         flash(f"You have unfollowed {username}.", "info")
@@ -455,6 +490,10 @@ def unfollow(username):
 @app.route("/user/<username>")
 @login_required
 def view_user(username):
+    """
+    View another user's profile.
+    Shows profile info, gigs, and follow/unfollow status.
+    """
     users = load_users()
     user = next((u for u in users if u["username"] == username), None)
     
@@ -465,7 +504,6 @@ def view_user(username):
     gigs = load_gigs()
     user_gigs = [g for g in gigs if g["username"] == username]
     
-    # Check if the current user is already following this user
     current_user = session["user"]
     following = get_following(current_user)
     is_following = username in following
@@ -473,7 +511,21 @@ def view_user(username):
     return render_template("user_profile.html", username=username, user=user, gigs=user_gigs, is_following=is_following)
 
 
+# ---------------------- FOOTER PAGES ----------------------
+@app.route("/about")
+def about():
+    """About page."""
+    return render_template("about.html")
 
+@app.route("/contact", methods=["POST", "GET"])
+def contact():
+    """Contact page."""
+    return render_template("contact.html")
+
+@app.route("/help")
+def help():
+    """Help page."""
+    return render_template("help.html")
 
 
 # ---------------------------
