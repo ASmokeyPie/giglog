@@ -68,6 +68,8 @@ def save_gigs(gigs):
 # -- User Data --
 def load_users():
     """
+    Loads the users from the JSON file.
+    Returns an empty list if the file does not exist.
     """
     if not os.path.exists(USERS_FILE):
         return []
@@ -76,6 +78,7 @@ def load_users():
 
 def save_users(users):
     """
+    Saves the given list of users to the JSON file with indentation for readability.
     """
     with open(USERS_FILE, "w") as f:
         json.dump(users, f, indent=4)
@@ -83,6 +86,8 @@ def save_users(users):
 # -- User Follows --
 def load_follows():
     """
+    Loads who follows who from the JSON file.
+    Returns an empty list if the file does not exist.
     """
     if not os.path.exists(FOLLOWS_FILE):
         return []
@@ -91,6 +96,7 @@ def load_follows():
 
 def save_follows(follows):
     """
+    Saves the updated follow data to the JSON file with indentation for readability.
     """
     with open(FOLLOWS_FILE, "w") as f:
         json.dump(follows, f, indent=4)
@@ -109,6 +115,9 @@ def get_following(username):
 
 #-- Require login --
 def login_required(f):
+    """
+    Provides login required functionality to any route wrapped with this function
+    """
     @wraps(f)
     def wrapper(*args, **kwargs):
         if "user" not in session:
@@ -135,6 +144,10 @@ def index():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    User registration page route.
+    Renders the register.html template.
+    """
     if request.method == "POST":
         username = request.form["username"].strip()
         email = request.form["email"].strip()
@@ -178,6 +191,10 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    User login page route.
+    Checks for valid log in of user and renders the login.html template.
+    """
     if request.method == "POST":
         username = request.form["username"].strip()
         password = request.form["password"].strip()
@@ -217,6 +234,10 @@ def feed():
 @app.route("/feed/following")
 @login_required
 def following_feed():
+    """
+    Following feed page route.
+    Loads all gigs from followed users + user's own and passes them to the feed.html template in a separate tab.
+    """
     current_user = session.get("user")
     gigs = load_gigs()
     following = get_following(current_user) # returns list of usernames
