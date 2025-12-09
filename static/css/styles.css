@@ -1,6 +1,7 @@
 html, body {
         height: 100%; /* Full viewport height */
         margin: 0;
+		background-color: floralwhite;
     }
 
 body {
@@ -14,4 +15,9 @@ body {
 
 .card {
 	border-radius: 12px;
+}
+
+#home-main-img {
+	
+	border: 10px double black;
 }
