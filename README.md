@@ -1,6 +1,6 @@
 # Giglog
 
-**Giglog** is a simple web application built with **Flask** that allows users to log, edit, and view music gigs they have attended. Users can register, create profiles, add gig entries, follow other users, and browse a global or followed users' feed. 
+**Giglog** is a simple web application built with **Flask** that allows users to log, edit, and view music gigs they have attended. Users can register, create profiles, add gig entries, follow other users, and browse a global or followed users feed. 
 
 The app uses JSON files to store users, gigs, and follow data, making it lightweight and easy to run locally.
 

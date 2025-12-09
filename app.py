@@ -229,6 +229,8 @@ def feed():
     Loads all gigs from JSON and passes them to the feed.html template.
     """
     gigs = load_gigs()
+    # Sort gigs by created_at descending (most recent first)
+    gigs = sorted(gigs, key=lambda g: g["created_at"], reverse=True)
     return render_template("feed.html", gigs=gigs, title="Global Feed")
 
 @app.route("/feed/following")
@@ -244,6 +246,8 @@ def following_feed():
     
     # Only show gigs by user or followed users
     filtered_gigs = [g for g in gigs if g["username"] in following + [current_user]]
+    # Sort filtered gigs by created_at descending
+    filtered_gigs = sorted(filtered_gigs, key=lambda g: g["created_at"], reverse=True)
     return render_template("feed.html", gigs=filtered_gigs, title="Followed Activity")
 
 
