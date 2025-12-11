@@ -376,15 +376,11 @@ def profile():
         return redirect(url_for("feed"))
     
     if request.method == "POST":
-        # ----------------------------
         # Update bio
-        # ----------------------------
         bio = request.form.get("bio", "").strip()  # Get bio from form, default empty string
         user["bio"] = bio  # Save to user dictionary
         
-        # ----------------------------
         # Update profile picture
-        # ----------------------------
         file = request.files.get("profile_pic")  # Get uploaded file from form
         if file and file.filename:  # Check if a file was actually uploaded
             # Extract file extension
