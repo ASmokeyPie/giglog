@@ -22,5 +22,13 @@
         "created_at": "2025-11-26 13:55:31",
         "bio": "Yet another normal human man no test androids here no sir",
         "profile_pic": "test3_1764181261.jpg"
+    },
+    {
+        "username": "matt",
+        "email": "matt@giglog.com",
+        "password": "scrypt:32768:8:1$N91pcnKuKyuRStmn$64f7d21ef62610448373c614e8710ae4253aabb6c3b9ad40b1cd5d8d8d5a211044b9e4c20c7623291bca5218f1ac39c668196bdbe0d2cdff47b12171c7868528",
+        "created_at": "2025-12-11 15:47:21",
+        "bio": "I am Matt",
+        "profile_pic": "matt_1765468075.jpg"
     }
 ]
